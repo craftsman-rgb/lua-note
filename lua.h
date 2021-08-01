@@ -177,22 +177,22 @@ LUA_API void  (lua_xmove) (lua_State *from, lua_State *to, int n);
 ** access functions (stack -> C)
 */
 
-LUA_API int             (lua_isnumber) (lua_State *L, int idx);
-LUA_API int             (lua_isstring) (lua_State *L, int idx);
-LUA_API int             (lua_iscfunction) (lua_State *L, int idx);
-LUA_API int             (lua_isinteger) (lua_State *L, int idx);
-LUA_API int             (lua_isuserdata) (lua_State *L, int idx);
-LUA_API int             (lua_type) (lua_State *L, int idx);
-LUA_API const char     *(lua_typename) (lua_State *L, int tp);
+LUA_API int             (lua_isnumber) (lua_State *L, int idx);  // 当给定索引的值是一个数字，或是一个可转换为数字的字符串时，返回 1 ，否则返回 0 
+LUA_API int             (lua_isstring) (lua_State *L, int idx);  // 当给定索引的值是一个字符串或是一个数字 （数字总能转换成字符串）时，返回 1 ，否则返回 0
+LUA_API int             (lua_iscfunction) (lua_State *L, int idx); // 当给定索引的值是一个 C 函数时，返回 1 ，否则返回 0
+LUA_API int             (lua_isinteger) (lua_State *L, int idx);  // 当给定索引的值是一个整数 （其值是一个数字，且内部以整数储存）， 时，返回 1 ，否则返回 0
+LUA_API int             (lua_isuserdata) (lua_State *L, int idx);  // 当给定索引的值是一个用户数据（无论是完全的还是轻量的）时， 返回 1 ，否则返回 0
+LUA_API int             (lua_type) (lua_State *L, int idx); // 返回给定有效索引处值的类型， 当索引无效（或无法访问）时则返回 LUA_TNONE。 lua_type 返回的类型被编码为一些个在 lua.h 中定义的常量： LUA_TNIL， LUA_TNUMBER， LUA_TBOOLEAN， LUA_TSTRING， LUA_TTABLE， LUA_TFUNCTION， LUA_TUSERDATA， LUA_TTHREAD， LUA_TLIGHTUSERDATA
+LUA_API const char     *(lua_typename) (lua_State *L, int tp); // nil, bealean, number, string, function, userdata, proto, thread
 
-LUA_API lua_Number      (lua_tonumberx) (lua_State *L, int idx, int *isnum);
+LUA_API lua_Number      (lua_tonumberx) (lua_State *L, int idx, int *isnum); //給定索引处的值，改为c类型的值
 LUA_API lua_Integer     (lua_tointegerx) (lua_State *L, int idx, int *isnum);
 LUA_API int             (lua_toboolean) (lua_State *L, int idx);
 LUA_API const char     *(lua_tolstring) (lua_State *L, int idx, size_t *len);
-LUA_API size_t          (lua_rawlen) (lua_State *L, int idx);
+LUA_API size_t          (lua_rawlen) (lua_State *L, int idx);  // 返回给定索引处值的固有“长度”： 对于字符串，它指字符串的长度； 对于表；它指不触发元方法的情况下取长度操作（'#'）应得到的值； 对于用户数据，它指为该用户数据分配的内存块的大小； 对于其它值，它为 0 
 LUA_API lua_CFunction   (lua_tocfunction) (lua_State *L, int idx);
 LUA_API void	       *(lua_touserdata) (lua_State *L, int idx);
-LUA_API lua_State      *(lua_tothread) (lua_State *L, int idx);
+LUA_API lua_State      *(lua_tothread) (lua_State *L, int idx); // 把给定索引处的值转换为一个 Lua 线程 （表示为 lua_State*）。 这个值必须是一个线程； 否则函数返回 NULL
 LUA_API const void     *(lua_topointer) (lua_State *L, int idx);
 
 
@@ -228,18 +228,18 @@ LUA_API int   (lua_compare) (lua_State *L, int idx1, int idx2, int op);
 /*
 ** push functions (C -> stack)
 */
-LUA_API void        (lua_pushnil) (lua_State *L);
-LUA_API void        (lua_pushnumber) (lua_State *L, lua_Number n);
-LUA_API void        (lua_pushinteger) (lua_State *L, lua_Integer n);
-LUA_API const char *(lua_pushlstring) (lua_State *L, const char *s, size_t len);
-LUA_API const char *(lua_pushstring) (lua_State *L, const char *s);
+LUA_API void        (lua_pushnil) (lua_State *L); // 将空值压栈
+LUA_API void        (lua_pushnumber) (lua_State *L, lua_Number n); // 把一个值为 n 的浮点数压栈
+LUA_API void        (lua_pushinteger) (lua_State *L, lua_Integer n);  // 把值为 n 的整数压栈
+LUA_API const char *(lua_pushlstring) (lua_State *L, const char *s, size_t len); // 把指针 s 指向的长度为 len 的字符串压栈。 Lua 对这个字符串做一个内部副本（或是复用一个副本）， 因此 s 处的内存在函数返回后，可以释放掉或是立刻重用于其它用途。 字符串内可以是任意二进制数据，包括零字符
+LUA_API const char *(lua_pushstring) (lua_State *L, const char *s); // 将指针 s 指向的零结尾的字符串压栈
 LUA_API const char *(lua_pushvfstring) (lua_State *L, const char *fmt,
                                                       va_list argp);
 LUA_API const char *(lua_pushfstring) (lua_State *L, const char *fmt, ...);
-LUA_API void  (lua_pushcclosure) (lua_State *L, lua_CFunction fn, int n);
-LUA_API void  (lua_pushboolean) (lua_State *L, int b);
+LUA_API void  (lua_pushcclosure) (lua_State *L, lua_CFunction fn, int n); // 把一个新的 C 闭包压栈
+LUA_API void  (lua_pushboolean) (lua_State *L, int b); // boolean压栈
 LUA_API void  (lua_pushlightuserdata) (lua_State *L, void *p);
-LUA_API int   (lua_pushthread) (lua_State *L);
+LUA_API int   (lua_pushthread) (lua_State *L); // 把 L 表示的线程压栈。 如果这个线程是当前状态机的主线程的话，返回 1 
 
 
 /*
