@@ -368,10 +368,14 @@ static int multiline (lua_State *L) {
 ** adding "return " in front of it) and second as a statement. Return
 ** the final status of load/call with the resulting function (if any)
 ** in the top of the stack.
+** 读取一行，并尝试将其首先作为表达式加载（编译）（通过
+** 在它前面加上 "return"），然后再把它作为一个语句加载。返回
+** 加载/调用的最终状态，并在堆栈的最上层加上结果函数（如果有的话）。
+**在堆栈的顶部。
 */
 static int loadline (lua_State *L) {
   int status;
-  lua_settop(L, 0);
+  lua_settop(L, 0); /*清空栈*/
   if (!pushline(L, 1))
     return -1;  /* no input */
   if ((status = addreturn(L)) != LUA_OK)  /* 'return ...' did not work? */
@@ -450,9 +454,10 @@ static int handle_script (lua_State *L, char **argv) {
 
 
 /* bits of various argument indicators in 'args' */
-#define has_error	1	/* bad option */
-#define has_i		2	/* -i */
-#define has_v		4	/* -v */
+/* 解析应用的选项 */
+#define has_error	1	/* bad option 错误*/
+#define has_i		2	/* -i 交互*/
+#define has_v		4	/* -v 版本*/
 #define has_e		8	/* -e */
 #define has_E		16	/* -E */
 
@@ -462,25 +467,28 @@ static int handle_script (lua_State *L, char **argv) {
 ** any invalid argument). 'first' returns the first not-handled argument
 ** (either the script name or a bad argument in case of error).
 */
+/*
+** 遍历所有的argv，返回掩码，表示运行参数；用error code发现错误。first为第一个未处理参数。
+*/
 static int collectargs (char **argv, int *first) {
   int args = 0;
   int i;
   for (i = 1; argv[i] != NULL; i++) {
     *first = i;
-    if (argv[i][0] != '-')  /* not an option? */
+    if (argv[i][0] != '-')  /* not an option? 处理不包含任何选项*/
         return args;  /* stop handling options */
     switch (argv[i][1]) {  /* else check option */
       case '-':  /* '--' */
         if (argv[i][2] != '\0')  /* extra characters after '--'? */
           return has_error;  /* invalid option */
         *first = i + 1;
-        return args;
-      case '\0':  /* '-' */
+        return args; /*  --       stop handling options */
+      case '\0':  /* '-' stop handling options and execute stdin */
         return args;  /* script "name" is '-' */
       case 'E':
         if (argv[i][2] != '\0')  /* extra characters after 1st? */
           return has_error;  /* invalid option */
-        args |= has_E;
+        args |= has_E; /* -E       ignore environment variables*/
         break;
       case 'i':
         args |= has_i;  /* (-i implies -v) *//* FALLTHROUGH */
@@ -550,19 +558,20 @@ static int handle_luainit (lua_State *L) {
 /*
 ** Main body of stand-alone interpreter (to be called in protected mode).
 ** Reads the options and handles them all.
+** 独立解释器，读选项并处理它们
 */
 static int pmain (lua_State *L) {
   int argc = (int)lua_tointeger(L, 1);
   char **argv = (char **)lua_touserdata(L, 2);
   int script;
   int args = collectargs(argv, &script);
-  luaL_checkversion(L);  /* check that interpreter has correct version */
+  luaL_checkversion(L);  /* check that interpreter has correct version 检查调用它的内核是否是创建这个 Lua 状态机的内核。 以及调用它的代码是否使用了相同的 Lua 版本。 同时也检查调用它的内核与创建该 Lua 状态机的内核 是否使用了同一片地址空间。*/
   if (argv[0] && argv[0][0]) progname = argv[0];
-  if (args == has_error) {  /* bad arg? */
+  if (args == has_error) {  /* bad arg? 参数异常 */
     print_usage(argv[script]);  /* 'script' has index of bad arg. */
     return 0;
   }
-  if (args & has_v)  /* option '-v'? */
+  if (args & has_v)  /* option '-v'? 输出版本*/
     print_version();
   if (args & has_E) {  /* option '-E'? */
     lua_pushboolean(L, 1);  /* signal for libraries to ignore env. vars. */
