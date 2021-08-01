@@ -43,13 +43,13 @@
 
 
 /* thread status */
-#define LUA_OK		0
-#define LUA_YIELD	1
-#define LUA_ERRRUN	2
-#define LUA_ERRSYNTAX	3
-#define LUA_ERRMEM	4
-#define LUA_ERRGCMM	5
-#define LUA_ERRERR	6
+#define LUA_OK		0  // 正常
+#define LUA_YIELD	1  // 挂起
+#define LUA_ERRRUN	2  // 运行时错误
+#define LUA_ERRSYNTAX	3  // 语法错误
+#define LUA_ERRMEM	4  // 内存错误，例如内存不足
+#define LUA_ERRGCMM	5  // gc error
+#define LUA_ERRERR	6  // other error
 
 
 typedef struct lua_State lua_State;
@@ -58,29 +58,29 @@ typedef struct lua_State lua_State;
 /*
 ** basic types
 */
-#define LUA_TNONE		(-1)
+#define LUA_TNONE		(-1) // 虚拟类型,判断原始值是否有效
 
-#define LUA_TNIL		0
-#define LUA_TBOOLEAN		1
-#define LUA_TLIGHTUSERDATA	2
-#define LUA_TNUMBER		3
-#define LUA_TSTRING		4
-#define LUA_TTABLE		5
-#define LUA_TFUNCTION		6
-#define LUA_TUSERDATA		7
-#define LUA_TTHREAD		8
+#define LUA_TNIL		0  // nil
+#define LUA_TBOOLEAN		1  // true or false
+#define LUA_TLIGHTUSERDATA	2  // tuserdata
+#define LUA_TNUMBER		3  // number
+#define LUA_TSTRING		4  // string
+#define LUA_TTABLE		5  // table
+#define LUA_TFUNCTION		6  // faction
+#define LUA_TUSERDATA		7  // userdata
+#define LUA_TTHREAD		8  // thread
 
-#define LUA_NUMTAGS		9
+#define LUA_NUMTAGS		9  // 类型总数,不包括LUA_TNONE
 
 
 
 /* minimum Lua stack available to a C function */
-#define LUA_MINSTACK	20
+#define LUA_MINSTACK	20  // Lua调用C，至少保证LUA_MINSTACK可以使用
 
 
 /* predefined values in the registry */
-#define LUA_RIDX_MAINTHREAD	1
-#define LUA_RIDX_GLOBALS	2
+#define LUA_RIDX_MAINTHREAD	1  // 索引下为状态机主线程
+#define LUA_RIDX_GLOBALS	2  // 索引下为全局环境
 #define LUA_RIDX_LAST		LUA_RIDX_GLOBALS
 
 
@@ -94,8 +94,8 @@ typedef LUA_INTEGER lua_Integer;
 /* unsigned integer type */
 typedef LUA_UNSIGNED lua_Unsigned;
 
-/* type for continuation-function contexts */
-typedef LUA_KCONTEXT lua_KContext;
+/* type for continuation-functi contexts */
+typedef LUA_KCONTEXT lua_KContext;  // continuation-function的上下文
 
 
 /*
@@ -106,11 +106,14 @@ typedef int (*lua_CFunction) (lua_State *L);
 /*
 ** Type for continuation functions
 */
-typedef int (*lua_KFunction) (lua_State *L, int status, lua_KContext ctx);
+typedef int (*lua_KFunction) (lua_State *L, int status, lua_KContext ctx); // 连续函数
 
 
 /*
 ** Type for functions that read/write blocks when loading/dumping Lua chunks
+*/
+/*
+** 加载或写入一段内存，ud指向内存块,sz为大小
 */
 typedef const char * (*lua_Reader) (lua_State *L, void *ud, size_t *sz);
 
@@ -119,6 +122,8 @@ typedef int (*lua_Writer) (lua_State *L, const void *p, size_t sz, void *ud);
 
 /*
 ** Type for memory-allocation functions
+** 内存分配器函数的类型
+** ud由lua_newstate传入的指针，ptr指向已分配、重新分配、释放的指针，osize原始尺寸，nsize新尺寸
 */
 typedef void * (*lua_Alloc) (void *ud, void *ptr, size_t osize, size_t nsize);
 
@@ -143,6 +148,9 @@ extern const char lua_ident[];
 */
 LUA_API lua_State *(lua_newstate) (lua_Alloc f, void *ud);
 LUA_API void       (lua_close) (lua_State *L);
+/*
+** 创建新线程
+*/
 LUA_API lua_State *(lua_newthread) (lua_State *L);
 
 LUA_API lua_CFunction (lua_atpanic) (lua_State *L, lua_CFunction panicf);
@@ -154,13 +162,13 @@ LUA_API const lua_Number *(lua_version) (lua_State *L);
 /*
 ** basic stack manipulation
 */
-LUA_API int   (lua_absindex) (lua_State *L, int idx);
-LUA_API int   (lua_gettop) (lua_State *L);
-LUA_API void  (lua_settop) (lua_State *L, int idx);
-LUA_API void  (lua_pushvalue) (lua_State *L, int idx);
-LUA_API void  (lua_rotate) (lua_State *L, int idx, int n);
-LUA_API void  (lua_copy) (lua_State *L, int fromidx, int toidx);
-LUA_API int   (lua_checkstack) (lua_State *L, int n);
+LUA_API int   (lua_absindex) (lua_State *L, int idx);  // 将索引转为绝对索引，不依赖于栈顶
+LUA_API int   (lua_gettop) (lua_State *L); // 返回栈顶索引，也就是栈元素个数
+LUA_API void  (lua_settop) (lua_State *L, int idx); // 参数允许传入任何索引以及 0 。 它将把堆栈的栈顶设为这个索引。 如果新的栈顶比原来的大， 超出部分的新元素将被填为 nil 。 如果 index 为 0 ， 把栈上所有元素移除。
+LUA_API void  (lua_pushvalue) (lua_State *L, int idx);  // 栈上给定索引处的元素作为副本压栈
+LUA_API void  (lua_rotate) (lua_State *L, int idx, int n); // 位置轮转
+LUA_API void  (lua_copy) (lua_State *L, int fromidx, int toidx); // fromidx 到 toidx复制值
+LUA_API int   (lua_checkstack) (lua_State *L, int n); // 确保栈上n个空位
 
 LUA_API void  (lua_xmove) (lua_State *from, lua_State *to, int n);
 
@@ -245,24 +253,24 @@ LUA_API int (lua_rawget) (lua_State *L, int idx);
 LUA_API int (lua_rawgeti) (lua_State *L, int idx, lua_Integer n);
 LUA_API int (lua_rawgetp) (lua_State *L, int idx, const void *p);
 
-LUA_API void  (lua_createtable) (lua_State *L, int narr, int nrec);
-LUA_API void *(lua_newuserdata) (lua_State *L, size_t sz);
-LUA_API int   (lua_getmetatable) (lua_State *L, int objindex);
-LUA_API int  (lua_getuservalue) (lua_State *L, int idx);
+LUA_API void  (lua_createtable) (lua_State *L, int narr, int nrec); // 空表压栈，narr建议数组长度，nrec序列元素之外长度
+LUA_API void *(lua_newuserdata) (lua_State *L, size_t sz); // 分配指定大小的内存块，返回指针
+LUA_API int   (lua_getmetatable) (lua_State *L, int objindex); // 如果该索引处的值有元表，则将其元表压栈，返回 1 。 否则不会将任何东西入栈，返回 0 。
+LUA_API int  (lua_getuservalue) (lua_State *L, int idx); // 将给定索引处的用户数据所关联的 Lua 值压栈，返回压入值的类型。
 
 
 /*
 ** set functions (stack -> Lua)
 */
-LUA_API void  (lua_setglobal) (lua_State *L, const char *name);
-LUA_API void  (lua_settable) (lua_State *L, int idx);
+LUA_API void  (lua_setglobal) (lua_State *L, const char *name); // 从堆栈上弹出一个值，并将其设为全局变量 name 的新值。
+LUA_API void  (lua_settable) (lua_State *L, int idx); // 从栈上弹出一个值并将其设为给定索引处用户数据的关联值。
 LUA_API void  (lua_setfield) (lua_State *L, int idx, const char *k);
 LUA_API void  (lua_seti) (lua_State *L, int idx, lua_Integer n);
 LUA_API void  (lua_rawset) (lua_State *L, int idx);
 LUA_API void  (lua_rawseti) (lua_State *L, int idx, lua_Integer n);
 LUA_API void  (lua_rawsetp) (lua_State *L, int idx, const void *p);
 LUA_API int   (lua_setmetatable) (lua_State *L, int objindex);
-LUA_API void  (lua_setuservalue) (lua_State *L, int idx);
+LUA_API void  (lua_setuservalue) (lua_State *L, int idx); // 从栈上弹出一个值并将其设为给定索引处用户数据的关联值。
 
 
 /*
@@ -284,12 +292,13 @@ LUA_API int (lua_dump) (lua_State *L, lua_Writer writer, void *data, int strip);
 
 /*
 ** coroutine functions
+** 协程函数
 */
 LUA_API int  (lua_yieldk)     (lua_State *L, int nresults, lua_KContext ctx,
-                               lua_KFunction k);
-LUA_API int  (lua_resume)     (lua_State *L, lua_State *from, int narg);
-LUA_API int  (lua_status)     (lua_State *L);
-LUA_API int (lua_isyieldable) (lua_State *L);
+                               lua_KFunction k); // 挂起
+LUA_API int  (lua_resume)     (lua_State *L, lua_State *from, int narg); // 恢复
+LUA_API int  (lua_status)     (lua_State *L);  // 返回状态，线程状态值
+LUA_API int (lua_isyieldable) (lua_State *L);  // 如果给定的协程可以让出，返回 1 ，否则返回 0 
 
 #define lua_yield(L,n)		lua_yieldk(L, (n), 0, NULL)
 
@@ -298,15 +307,15 @@ LUA_API int (lua_isyieldable) (lua_State *L);
 ** garbage-collection function and options
 */
 
-#define LUA_GCSTOP		0
-#define LUA_GCRESTART		1
-#define LUA_GCCOLLECT		2
-#define LUA_GCCOUNT		3
-#define LUA_GCCOUNTB		4
-#define LUA_GCSTEP		5
-#define LUA_GCSETPAUSE		6
-#define LUA_GCSETSTEPMUL	7
-#define LUA_GCISRUNNING		9
+#define LUA_GCSTOP		0  // 停止垃圾收集器
+#define LUA_GCRESTART		1  // 重启垃圾收集器
+#define LUA_GCCOLLECT		2  // 发起一次完整的垃圾收集循环
+#define LUA_GCCOUNT		3  // 返回 Lua 使用的内存总量以 K 字节为单位）
+#define LUA_GCCOUNTB		4  // 返回当前内存使用量除以 1024 的余数
+#define LUA_GCSTEP		5  // 发起一步增量垃圾收集。
+#define LUA_GCSETPAUSE		6  // 把 data 设为 垃圾收集器间歇率 （参见 §2.5），并返回之前设置的值。
+#define LUA_GCSETSTEPMUL	7  // 把 data 设为 垃圾收集器步进倍率 （参见 §2.5），并返回之前设置的值。
+#define LUA_GCISRUNNING		9  // 返回收集器是否在运行（即没有停止）
 
 LUA_API int (lua_gc) (lua_State *L, int what, int data);
 
@@ -443,11 +452,11 @@ struct lua_Debug {
   const char *namewhat;	/* (n) 'global', 'local', 'field', 'method' */
   const char *what;	/* (S) 'Lua', 'C', 'main', 'tail' */
   const char *source;	/* (S) */
-  int currentline;	/* (l) */
-  int linedefined;	/* (S) */
-  int lastlinedefined;	/* (S) */
-  unsigned char nups;	/* (u) number of upvalues */
-  unsigned char nparams;/* (u) number of parameters */
+  int currentline;	/* (l) 给定函数正在执行的那一行*/
+  int linedefined;	/* (S) 函数定义开始处的行号*/
+  int lastlinedefined;	/* (S) 函数定义结束处的行号*/
+  unsigned char nups;	/* (u) number of upvalues 上值个数*/
+  unsigned char nparams;/* (u) number of parameters 函数固定形参个数 */
   char isvararg;        /* (u) */
   char istailcall;	/* (t) */
   char short_src[LUA_IDSIZE]; /* (S) */
