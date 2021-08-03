@@ -20,24 +20,28 @@
 #include "lualib.h"
 
 
-
+/* 输入提示 */
 #if !defined(LUA_PROMPT)
 #define LUA_PROMPT		"> "
 #define LUA_PROMPT2		">> "
 #endif
 
+/* 应用名称 */
 #if !defined(LUA_PROGNAME)
 #define LUA_PROGNAME		"lua"
 #endif
 
+/* 命令行最大输入 */
 #if !defined(LUA_MAXINPUT)
 #define LUA_MAXINPUT		512
 #endif
 
+/* 初始变量 */
 #if !defined(LUA_INIT_VAR)
 #define LUA_INIT_VAR		"LUA_INIT"
 #endif
 
+/* LUA_INIT_5_3 */
 #define LUA_INITVARVERSION	LUA_INIT_VAR LUA_VERSUFFIX
 
 
@@ -81,8 +85,11 @@
 
 #include <readline/readline.h>
 #include <readline/history.h>
+/* 读入一行，p提示，b缓存 */
 #define lua_readline(L,b,p)	((void)L, ((b)=readline(p)) != NULL)
+/* line录入history */
 #define lua_saveline(L,line)	((void)L, add_history(line))
+/* 释放缓存 */
 #define lua_freeline(L,b)	((void)L, free(b))
 
 #else				/* }{ */
@@ -107,6 +114,7 @@ static const char *progname = LUA_PROGNAME;
 
 /*
 ** Hook set by signal function to stop the interpreter.
+** 信号函数设置钩子去停止解释器
 */
 static void lstop (lua_State *L, lua_Debug *ar) {
   (void)ar;  /* unused arg. */
@@ -120,13 +128,15 @@ static void lstop (lua_State *L, lua_Debug *ar) {
 ** just change a Lua state (as there is no proper synchronization),
 ** this function only sets a hook that, when called, will stop the
 ** interpreter.
+** C信号下调用的函数。C信号不能改变Lua State（没有适当的同步），函数仅
+** 设置钩子，当被调用时，停止解释器。
 */
 static void laction (int i) {
   signal(i, SIG_DFL); /* if another SIGINT happens, terminate process */
   lua_sethook(globalL, lstop, LUA_MASKCALL | LUA_MASKRET | LUA_MASKCOUNT, 1);
 }
 
-
+/* 打印帮助 */
 static void print_usage (const char *badoption) {
   lua_writestringerror("%s: ", progname);
   if (badoption[1] == 'e' || badoption[1] == 'l')
@@ -151,6 +161,7 @@ static void print_usage (const char *badoption) {
 /*
 ** Prints an error message, adding the program name in front of it
 ** (if present)
+** 打印一条错误信息，在前面加上
 */
 static void l_message (const char *pname, const char *msg) {
   if (pname) lua_writestringerror("%s: ", pname);

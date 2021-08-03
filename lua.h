@@ -407,20 +407,21 @@ LUA_API void      (lua_setallocf) (lua_State *L, lua_Alloc f, void *ud);
 /*
 ** Event codes
 */
-#define LUA_HOOKCALL	0
-#define LUA_HOOKRET	1
-#define LUA_HOOKLINE	2
-#define LUA_HOOKCOUNT	3
-#define LUA_HOOKTAILCALL 4
+
+#define LUA_HOOKCALL	0   /* hook 调用 */
+#define LUA_HOOKRET	1     /* hook 返回 */
+#define LUA_HOOKLINE	2   /* hook 某行 */
+#define LUA_HOOKCOUNT	3   /* hook 数量 */
+#define LUA_HOOKTAILCALL 4  /* hook 尾递归 */
 
 
 /*
 ** Event masks
 */
-#define LUA_MASKCALL	(1 << LUA_HOOKCALL)
-#define LUA_MASKRET	(1 << LUA_HOOKRET)
-#define LUA_MASKLINE	(1 << LUA_HOOKLINE)
-#define LUA_MASKCOUNT	(1 << LUA_HOOKCOUNT)
+#define LUA_MASKCALL	(1 << LUA_HOOKCALL) /* 调用掩码 */
+#define LUA_MASKRET	(1 << LUA_HOOKRET)    /* 返回掩码 */
+#define LUA_MASKLINE	(1 << LUA_HOOKLINE) /* 某行掩码 */
+#define LUA_MASKCOUNT	(1 << LUA_HOOKCOUNT)  /* 数量掩码 */
 
 typedef struct lua_Debug lua_Debug;  /* activation record */
 
